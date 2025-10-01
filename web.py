@@ -18,7 +18,7 @@ if not hasattr(np, 'bool'):
 
 # Page config
 st.set_page_config(
-    page_title="GBM Survival Prediction (Cox GBM)",
+    page_title="GBM Survival Prediction for CRNENs",
     page_icon="📈",
     layout="wide"
 )
