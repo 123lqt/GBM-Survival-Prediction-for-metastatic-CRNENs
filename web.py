@@ -204,7 +204,7 @@ def main():
         st.sidebar.info(f"SHAP background samples: {len(X_bg)}")
 
     # 页面标题
-    st.title("GBM Survival Prediction")
+    st.title("GBM Survival Prediction for CRNENs")
     st.markdown("Please fill the inputs below and click 'Predict'.")
 
     # 三列布局：按训练顺序渲染输入控件
