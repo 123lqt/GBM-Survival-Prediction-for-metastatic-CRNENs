@@ -18,7 +18,7 @@ if not hasattr(np, 'bool'):
 
 # Page config
 st.set_page_config(
-    page_title="GBM Survival Prediction for CRNENs",
+    page_title="GBM Survival Prediction (Cox GBM)",
     page_icon="📈",
     layout="wide"
 )
@@ -141,8 +141,38 @@ def predict_survival_probs(model, X_row_df, years=PRED_YEARS):
         return probs
 
 
+def compute_median_risk_threshold(payload, model, X_bg):
+    # 1) 优先从 payload 读取（由训练脚本写入）
+    try:
+        if "median_risk" in payload:
+            val = float(payload["median_risk"])
+            if np.isfinite(val):
+                return val, 'payload["median_risk"]'
+    except Exception:
+        pass
+    # 2) 其次，从训练预测文件计算
+    try:
+        df_pred = pd.read_csv("train_predictions.csv", encoding="utf-8-sig")
+        if "predicted" in df_pred.columns:
+            vals = pd.to_numeric(df_pred["predicted"], errors="coerce").dropna().values
+            if len(vals) > 0:
+                return float(np.median(vals)), "train_predictions.csv"
+    except Exception:
+        pass
+    # 3) 回退：对背景样本的模型预测取中位数
+    try:
+        if X_bg is not None and len(X_bg) > 0:
+            scores_bg = model.predict(X_bg.astype(np.float32))
+            scores_bg = np.asarray(scores_bg, dtype=float)
+            if scores_bg.size > 0 and np.all(np.isfinite(scores_bg)):
+                return float(np.median(scores_bg)), "background samples"
+    except Exception:
+        pass
+    return float("nan"), "unavailable"
+
+
 def main():
-    st.sidebar.title("GBM Survival Prediction for CRNENs")
+    st.sidebar.title("GBM Survival Risk Prediction (Cox GBM)")
     st.sidebar.markdown(
         "- Uses 10 features for CoxGBM survival analysis\n"
         "- Predicts 1/3/5-year survival probabilities (time unit assumed: months 12/36/60)\n"
@@ -174,7 +204,7 @@ def main():
         st.sidebar.info(f"SHAP background samples: {len(X_bg)}")
 
     # 页面标题
-    st.title("GBM Survival Prediction for CRNENs")
+    st.title("GBM Survival Prediction")
     st.markdown("Please fill the inputs below and click 'Predict'.")
 
     # 三列布局：按训练顺序渲染输入控件
@@ -209,10 +239,21 @@ def main():
             with cols[idx]:
                 st.metric(label=f"{y}-year survival", value=f"{p*100:.2f}%" if np.isfinite(p) else "N/A")
 
-        # 风险分数（越大风险越高）
+        # 风险分数与基于中位数阈值的风险分层
         try:
             risk = float(model.predict(input_df)[0])
-            st.markdown(f"**Risk score (relative risk)**: {risk:.4f}")
+            median_risk, thr_src = compute_median_risk_threshold(payload, model, X_bg)
+            risk_level = "High risk" if np.isfinite(median_risk) and risk > median_risk else ("Low risk" if np.isfinite(median_risk) else "N/A")
+
+            st.subheader("Risk stratification (median-based)")
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                st.metric(label="Prediction", value=f"{risk:.4f}")
+            with c2:
+                st.metric(label="RiskLevel", value=risk_level)
+            with c3:
+                st.metric(label="MedianRisk", value=f"{median_risk:.4f}" if np.isfinite(median_risk) else "N/A")
+            st.caption(f"Rule: score > median ⇒ High risk. Threshold source: {thr_src}.")
         except Exception:
             pass
 
