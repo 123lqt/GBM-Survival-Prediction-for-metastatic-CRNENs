@@ -142,7 +142,7 @@ def predict_survival_probs(model, X_row_df, years=PRED_YEARS):
 
 
 def main():
-    st.sidebar.title("GBM Survival Risk Prediction (Cox GBM)")
+    st.sidebar.title("GBM Survival Prediction for CRNENs")
     st.sidebar.markdown(
         "- Uses 10 features for CoxGBM survival analysis\n"
         "- Predicts 1/3/5-year survival probabilities (time unit assumed: months 12/36/60)\n"
@@ -174,7 +174,7 @@ def main():
         st.sidebar.info(f"SHAP background samples: {len(X_bg)}")
 
     # 页面标题
-    st.title("GBM Survival Prediction")
+    st.title("GBM Survival Prediction for CRNENs")
     st.markdown("Please fill the inputs below and click 'Predict'.")
 
     # 三列布局：按训练顺序渲染输入控件
