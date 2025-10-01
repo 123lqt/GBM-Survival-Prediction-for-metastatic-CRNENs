@@ -1,0 +1,10 @@
+scikit-survival>=0.21
+scikit-learn>=1.2
+numpy>=1.22
+pandas>=1.5
+scipy>=1.9
+joblib>=1.2
+streamlit>=1.25
+shap>=0.41
+matplotlib>=3.7
+streamlit-shap>=0.0.5
