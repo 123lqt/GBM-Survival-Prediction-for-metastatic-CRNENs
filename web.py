@@ -18,7 +18,7 @@ if not hasattr(np, 'bool'):
 
 # Page config
 st.set_page_config(
-    page_title="GBM Survival Prediction (Cox GBM)",
+    page_title="GBM Survival Prediction for CRNENs",
     page_icon="📈",
     layout="wide"
 )
@@ -172,7 +172,7 @@ def compute_median_risk_threshold(payload, model, X_bg):
 
 
 def main():
-    st.sidebar.title("GBM Survival Risk Prediction (Cox GBM)")
+    st.sidebar.title("GBM Survival Prediction for CRNENs")
     st.sidebar.markdown(
         "- Uses 10 features for CoxGBM survival analysis\n"
         "- Predicts 1/3/5-year survival probabilities (time unit assumed: months 12/36/60)\n"
